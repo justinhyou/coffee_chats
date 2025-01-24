@@ -11,5 +11,7 @@ Basic grouping algorithm and database management with Python and sqllite.
 * Feedback mechanism to add to avoid list.
 * Porting google survey into input.csv.
 * Contact for reporting issues, concerns with people, etc.
-* Location preference (e.g. South bay)
+* Location preference (e.g. South bay).
 * Feedback mechanism to confirm who met, thereby updating database appropriately if people missing.
+* Enable other preferences (e.g. industry, age).
+* 

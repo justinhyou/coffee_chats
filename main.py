@@ -1,18 +1,21 @@
-import pandas as pd
-from collections import defaultdict
+""" Main coffee chat grouping algorithm. """
+
 import sqlite3
 import random
+from collections import defaultdict
+import pandas as pd
 
 
-group_size = 4
-input_csv = "input.csv"
+GROUP_SIZE = 4
+INPUT_CSV = "input.csv"
 
 
 def get_input():
-    df = pd.read_csv(input_csv)
-    user_contacts = dict()
+    """ Read in the input file. """
+    df = pd.read_csv(INPUT_CSV)
+    user_contacts = {}
     user_avoid = defaultdict(list)
-    for i, row in df.iterrows():
+    for _, row in df.iterrows():
         name = row['Name']
         email = row['Email']
         avoid_names = row['Avoid']
@@ -25,6 +28,7 @@ def get_input():
 
 
 def grouping_algorithm(users, user_avoid, previous_groups):
+    """ Main grouping algorithm based on randomness and avoid list. """
     already_used =  set()
     new_groups = []
 
@@ -43,10 +47,10 @@ def grouping_algorithm(users, user_avoid, previous_groups):
         avoid_users.add(user)
 
         remaining_users = [user for user in users if user not in avoid_users]
-        if len(remaining_users) < group_size - 1:
+        if len(remaining_users) < GROUP_SIZE - 1:
             selected_users = remaining_users
         else:
-            selected_users = random.sample(remaining_users, group_size - 1)
+            selected_users = random.sample(remaining_users, GROUP_SIZE - 1)
         selected_users.append(user)
         already_used.update(selected_users)
         new_groups.append(selected_users)
@@ -55,6 +59,7 @@ def grouping_algorithm(users, user_avoid, previous_groups):
 
 
 def get_previous_groups():
+    """ Retrieve previous groups. """
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
     cursor.execute('''
@@ -76,6 +81,7 @@ def get_previous_groups():
 
 
 def update_database(new_groups):
+    """ Include the new groups into the database. """
     conn = sqlite3.connect("database.db")
     cursor = conn.cursor()
 
@@ -85,13 +91,14 @@ def update_database(new_groups):
         cursor.execute('''INSERT INTO previous_groups (names) VALUES (?)''', (names,))
 
 
-subject = "Subject:", "New Group for Coffee Chats!"
-body_prepend = "Hi, everyone! \nHere is your new group for an informal coffee chat!"
-body = "Feel free to meet at your own convenience!"
-body_appendum = "\nSincerely, \nSan Francisco Bay Area QuestBridge Alumni Board\n"
+SUBJECT = "Subject:", "New Group for Coffee Chats!"
+BODY_PREPEND = "Hi, everyone! \nHere is your new group for an informal coffee chat!"
+BODY = "Feel free to meet at your own convenience!"
+BODY_APPENDUM = "\nSincerely, \nSan Francisco Bay Area QuestBridge Alumni Board\n"
 
 
 def main():
+    """ Process the algorithm and update the database as necessary. """
     user_avoid, user_contacts = get_input()
     previous_groups = get_previous_groups()
     new_groups = grouping_algorithm(user_contacts.keys(), user_avoid, previous_groups)
@@ -99,13 +106,12 @@ def main():
     for new_group in new_groups:
         emails = [user_contacts[user] for user in new_group]
         print("Emails:", ",".join(emails))
-        print(subject)
-        print(body_prepend)
+        print(SUBJECT)
+        print(BODY_PREPEND)
         print(",".join(new_group))
-        print(body)
-        print(body_appendum)
+        print(BODY)
+        print(BODY_APPENDUM)
 
 
 if __name__ == '__main__':
     main()
-    
