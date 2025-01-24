@@ -6,7 +6,7 @@ Basic grouping algorithm and database management with Python and sqllite.
 * Email API to automate email process sent from the board.
 * Meeting scheduler API to facilitate finding a time to meet.
 * Avoid list currently must perfectly match name
-* User list maintained by unique names, cannot handle people with matching names.
+* User list maintained by unique names, cannot handle people with matching names. Handle aliasing.
 * Cannot handle name changes (e.g. nicknames, marriage, etc.).
 * Feedback mechanism to add to avoid list.
 * Porting google survey into input.csv.
@@ -14,4 +14,4 @@ Basic grouping algorithm and database management with Python and sqllite.
 * Location preference (e.g. South bay).
 * Feedback mechanism to confirm who met, thereby updating database appropriately if people missing.
 * Enable other preferences (e.g. industry, age).
-* 
+* User interface or github action triggers for scheduling runs.
