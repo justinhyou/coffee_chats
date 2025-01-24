@@ -1,2 +1,2 @@
-# coffee_chats
-Basic algorithm and database for creating coffee chat groups. 
+# Coffee Chats
+Basic grouping algorithm and database management with Python and sqllite. 
