@@ -3,11 +3,17 @@
 import sqlite3
 import random
 from collections import defaultdict
+import os
 import pandas as pd
 
 
 GROUP_SIZE = 4
 INPUT_CSV = "input.csv"
+
+
+EMAIL_DIRECTORY = "emails"
+if not os.path.exists(EMAIL_DIRECTORY):
+    os.mkdir(EMAIL_DIRECTORY)
 
 
 def get_input():
@@ -39,7 +45,6 @@ def grouping_algorithm(users, user_avoid, previous_groups):
         avoid_users = set(user_avoid[user])
         for group in previous_groups:
             group.remove(user)
-
             # random user in previous group to avoid
             avoid = random.choice(group)
             avoid_users.add(avoid)
@@ -91,7 +96,7 @@ def update_database(new_groups):
         cursor.execute('''INSERT INTO previous_groups (names) VALUES (?)''', (names,))
 
 
-SUBJECT = "Subject:", "New Group for Coffee Chats!"
+SUBJECT = "Subject: New Group for Coffee Chats!"
 BODY_PREPEND = "Hi, everyone! \nHere is your new group for an informal coffee chat!"
 BODY = "Feel free to meet at your own convenience!"
 BODY_APPENDUM = "\nSincerely, \nSan Francisco Bay Area QuestBridge Alumni Board\n"
@@ -103,14 +108,22 @@ def main():
     previous_groups = get_previous_groups()
     new_groups = grouping_algorithm(user_contacts.keys(), user_avoid, previous_groups)
     update_database(new_groups)
-    for new_group in new_groups:
+    for i, new_group in enumerate(new_groups):
         emails = [user_contacts[user] for user in new_group]
-        print("Emails:", ",".join(emails))
-        print(SUBJECT)
-        print(BODY_PREPEND)
-        print(",".join(new_group))
-        print(BODY)
-        print(BODY_APPENDUM)
+        path = os.path.join(EMAIL_DIRECTORY, f'email_{i}.txt')
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(f"Emails: {','.join(emails)}\n\n")
+            f.write(SUBJECT)
+            f.write("\n")
+            f.write("\n")
+            f.write(BODY_PREPEND)
+            f.write("\n")
+            for person in new_group:
+                f.write(f"— {person}\n")
+            f.write("\n")
+            f.write(BODY)
+            f.write("\n")
+            f.write(BODY_APPENDUM)
 
 
 if __name__ == '__main__':
