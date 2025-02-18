@@ -21,16 +21,19 @@ def get_input():
     df = pd.read_csv(INPUT_CSV)
     user_contacts = {}
     user_avoid = defaultdict(list)
+    user_locations = {}
     for _, row in df.iterrows():
         name = row['Name']
         email = row['Email']
         avoid_names = row['Avoid']
+        preferred_locations = row['Locations']
         if pd.notna(avoid_names):
             avoid_names = avoid_names.split(",")
             user_avoid[name] = avoid_names
         user_contacts[name] = email
+        user_locations[name] = set(preferred_locations.split(","))
 
-    return user_avoid, user_contacts
+    return user_avoid, user_contacts, user_locations
 
 
 def grouping_algorithm(users, user_avoid, previous_groups):
@@ -104,7 +107,7 @@ BODY_APPENDUM = "\nSincerely, \nSan Francisco Bay Area QuestBridge Alumni Board\
 
 def main():
     """ Process the algorithm and update the database as necessary. """
-    user_avoid, user_contacts = get_input()
+    user_avoid, user_contacts, user_locations = get_input()
     previous_groups = get_previous_groups()
     new_groups = grouping_algorithm(user_contacts.keys(), user_avoid, previous_groups)
     update_database(new_groups)
