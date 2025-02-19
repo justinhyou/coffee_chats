@@ -20,39 +20,59 @@ def get_input():
     """ Read in the input file. """
     df = pd.read_csv(INPUT_CSV)
     user_contacts = {}
-    user_avoid = defaultdict(list)
     user_locations = {}
     leadership = set()
     for _, row in df.iterrows():
         name = row['Name']
         email = row['Email']
-        avoid_names = row['Avoid']
         preferred_locations = row['Locations']
         if row["is_leader"] == "Yes":
             leadership.update(name)
-        if pd.notna(avoid_names):
-            avoid_names = avoid_names.split(",")
-            user_avoid[name] = avoid_names
         user_contacts[name] = email
         user_locations[name] = set(preferred_locations.split(","))
 
-    return user_avoid, user_contacts, user_locations, leadership
+    return user_contacts, user_locations, leadership
 
 
-def grouping_algorithm(leadership, users, previous_groups):
+def group_participants_by_loc(user_locations, leadership):
+    """ Group non-leader participants by location. """
+    location_to_participants = defaultdict(list)
+
+    for user in user_locations:
+        # omit leadership
+        if user in leadership:
+            continue
+        locations = user_locations[user]
+        for location in locations:
+            location_to_participants[location].append(user)
+
+    return location_to_participants
+
+
+def grouping_algorithm(leadership_with_location, user_locations, previous_groups):
     """ Grouping algorithm that is based on leadership availability. """
     already_used = set()
     new_groups = []
 
+    leadership = list(leadership_with_location.keys())
+    random.shuffle(leadership)
+
+    location_to_participants = group_participants_by_loc(user_locations, leadership)
+
     for user in leadership:
+        location = leadership_with_location[user]
+        participants = location_to_participants[location]
+
         avoid_users = set(leadership)
         for group in previous_groups:
+            if user not in group:
+                continue
             group.remove(user)
             avoid = random.choice(group)
             avoid_users.add(avoid)
         avoid_users.update(already_used)
 
-        remaining_users = [person for person in users if person not in avoid_users]
+        remaining_users = [person for person in participants if person not in avoid_users]
         if len(remaining_users) < GROUP_SIZE - 1:
             selected_users = remaining_users
         else:
@@ -105,17 +125,25 @@ BODY = "Feel free to meet at your own convenience!"
 BODY_APPENDUM = "\nSincerely, \nSan Francisco Bay Area QuestBridge Alumni Board\n"
 
 
-CENTER_AROUND_LEADERSHIP = True
+def select_location_for_leadership(leadership, user_locations):
+    """ Randomly select location for each leadership member based on preference. """
+    leader_with_location = {}
+
+    for leader in leadership:
+        random_location = random.choice(user_locations[leader])
+        leader_with_location[leader] = random_location
+
+    return leader_with_location
 
 
 def main():
     """ Process the algorithm and update the database as necessary. """
-    user_avoid, user_contacts, user_locations, leadership = get_input()
+    user_contacts, user_locations, leadership = get_input()
+    # randomize preferred location of leadership
+    leadership_with_location = select_location_for_leadership(leadership, user_locations)
+    # shuffle to change grouping order
     previous_groups = get_previous_groups()
-    if CENTER_AROUND_LEADERSHIP:
-        new_groups = grouping_algorithm(leadership, user_contacts.keys(), previous_groups)
-    else:
-        new_groups = grouping_algorithm(user_contacts.keys(), user_avoid, previous_groups)
+    new_groups = grouping_algorithm(leadership_with_location, user_locations, previous_groups)
     update_database(new_groups)
     for i, new_group in enumerate(new_groups):
         leader, alumni = new_group
