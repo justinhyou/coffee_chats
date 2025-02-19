@@ -1,8 +1,8 @@
-﻿Name,Email,Avoid,Locations
-a,a@gmail.com,b,SF
-b,b@gmail.com,,"SF,Peninsula"
-c,c@gmail.com,,Peninsula
-d,d@gmail.com,"e,f",East Bay
-e,e@gmail.com,,SF
-f,f@gmail.com,,"SF,East Bay"
-g,g@gmail.com,,South Bay
+﻿Name,Email,Avoid,Locations,is_leader
+a,a@gmail.com,b,SF,
+b,b@gmail.com,,"SF,Peninsula",yes
+c,c@gmail.com,,Peninsula,
+d,d@gmail.com,"e,f",East Bay,
+e,e@gmail.com,,SF,
+f,f@gmail.com,,"SF,East Bay",yes,
+g,g@gmail.com,,South Bay,
